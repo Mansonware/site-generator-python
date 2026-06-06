@@ -1,13 +1,101 @@
 #!/usr/bin/env python3
 """
 Gerador de Sites Profissional com Python
-Cria sites modernos, responsivos e prontos para produção
+Com suporte total para Termux (Android) e todos os sistemas
 """
 
 import os
 import sys
 import json
+import subprocess
+import platform
 from datetime import datetime
+
+def detectar_ambiente():
+    """Detecta se está rodando no Termux (Android) ou outro sistema."""
+    sistema = platform.system().lower()
+    is_termux = "com.termux" in os.environ.get("PREFIX", "") or "ANDROID_ROOT" in os.environ
+    is_android = is_termux or "android" in sistema.lower()
+    
+    return {
+        "sistema": sistema,
+        "is_termux": is_termux,
+        "is_android": is_android,
+        "is_linux": sistema == "linux" and not is_termux,
+        "is_mac": sistema == "darwin",
+        "is_windows": sistema == "windows"
+    }
+
+def abrir_navegador(caminho_html):
+    """Abre o navegador de forma compatível com Termux e outros sistemas."""
+    caminho_absoluto = os.path.abspath(caminho_html)
+    ambiente = detectar_ambiente()
+    
+    print(f"\n🌐 Tentando abrir: {caminho_absoluto}")
+    
+    # Estratégia 1: Termux (Android)
+    if ambiente["is_termux"]:
+        print("📱 Detectado Termux (Android)")
+        
+        # Tenta abrir com xdg-open (se disponível no Termux)
+        try:
+            subprocess.run(["xdg-open", caminho_absoluto], timeout=3)
+            print("✅ Site aberto no navegador Android!")
+            return True
+        except:
+            pass
+        
+        # Alternativa: mostrar comando manual
+        print("\n⚠️ Não foi possível abrir automaticamente.")
+        print("📌 Para visualizar o site:")
+        print(f"   1. Acesse pelo gerenciador de arquivos: {caminho_absoluto}")
+        print("   2. Ou use um servidor HTTP:")
+        print(f"      cd {os.path.dirname(caminho_absoluto)}")
+        print("      python -m http.server 8000")
+        print("      Então abra no navegador: http://localhost:8000")
+        
+        # Pergunta se quer iniciar servidor HTTP
+        resposta = input("\n🔧 Iniciar servidor HTTP local para visualizar? (s/N): ").strip().lower()
+        if resposta in ('s', 'sim'):
+            print("\n🚀 Iniciando servidor...")
+            print("📱 Abra no navegador: http://localhost:8000")
+            print("⚠️ Pressione Ctrl+C para parar o servidor\n")
+            os.chdir(os.path.dirname(caminho_absoluto))
+            try:
+                subprocess.run([sys.executable, "-m", "http.server", "8000"])
+            except KeyboardInterrupt:
+                print("\n✅ Servidor encerrado.")
+            return True
+        return False
+    
+    # Estratégia 2: Linux / macOS / Windows
+    if ambiente["is_linux"]:
+        try:
+            subprocess.run(["xdg-open", caminho_absoluto])
+            print("✅ Site aberto no navegador padrão!")
+            return True
+        except:
+            pass
+    
+    if ambiente["is_mac"]:
+        try:
+            subprocess.run(["open", caminho_absoluto])
+            print("✅ Site aberto no navegador padrão!")
+            return True
+        except:
+            pass
+    
+    if ambiente["is_windows"]:
+        try:
+            os.startfile(caminho_absoluto)
+            print("✅ Site aberto no navegador padrão!")
+            return True
+        except:
+            pass
+    
+    # Estratégia 3: Fallback - mostrar caminho
+    print(f"\n📁 Abra manualmente o arquivo: {caminho_absoluto}")
+    return False
 
 def perguntar_config():
     """Coleta configurações do site interativamente."""
@@ -52,6 +140,20 @@ def perguntar_config():
     config['secoes'] = [s.strip() for s in secoes.split(",")] if secoes else ["1", "2", "3"]
     
     config['ano'] = datetime.now().year
+    
+    # Mostrar resumo
+    print("\n" + "="*50)
+    print("📋 RESUMO DO SITE:")
+    print(f"   Nome: {config['nome']}")
+    print(f"   Título: {config['titulo']}")
+    print(f"   Tema: {config['tema']}")
+    print(f"   Seções: {', '.join(config['secoes'])}")
+    print("="*50)
+    
+    confirmar = input("\n✅ Confirmar criação? (s/N): ").strip().lower()
+    if confirmar not in ('s', 'sim'):
+        print("❌ Criação cancelada.")
+        sys.exit(0)
     
     return config
 
@@ -107,7 +209,7 @@ def gerar_html(config):
     
     if "1" in config['secoes'] or "6" in config['secoes']:
         secoes_html += """
-        <section class="section">
+        <section id="sobre" class="section">
             <div class="container">
                 <h2>Sobre Nós</h2>
                 <p>Somos uma equipe apaixonada por criar soluções digitais incríveis. Nosso objetivo é transformar ideias em realidade através da tecnologia e criatividade.</p>
@@ -117,7 +219,7 @@ def gerar_html(config):
     
     if "2" in config['secoes'] or "6" in config['secoes']:
         secoes_html += """
-        <section class="section">
+        <section id="servicos" class="section">
             <div class="container">
                 <h2>Nossos Serviços</h2>
                 <div class="cards">
@@ -142,7 +244,7 @@ def gerar_html(config):
     
     if "3" in config['secoes'] or "6" in config['secoes']:
         secoes_html += """
-        <section class="section">
+        <section id="contato" class="section">
             <div class="container">
                 <h2>Contato</h2>
                 <form id="contactForm" class="contact-form">
@@ -160,8 +262,8 @@ def gerar_html(config):
             <div class="container">
                 <h2>Newsletter</h2>
                 <p>Receba novidades e conteúdos exclusivos</p>
-                <form id="newsletterForm" style="display: flex; gap: 1rem; max-width: 500px; margin: 0 auto;">
-                    <input type="email" placeholder="Seu melhor e-mail" required style="flex: 1;">
+                <form id="newsletterForm" style="display: flex; gap: 1rem; max-width: 500px; margin: 0 auto; flex-wrap: wrap;">
+                    <input type="email" placeholder="Seu melhor e-mail" required style="flex: 1; min-width: 200px;">
                     <button type="submit">Inscrever</button>
                 </form>
             </div>
@@ -521,61 +623,7 @@ def criar_site(config):
     
     # Gerar HTML
     html_content = gerar_html(config)
-    with open(os.path.join(nome, 'index.html'), 'w', encoding='utf-8') as f:
-        f.write(html_content)
+    caminho_html = os.path.join(nome, 'index.html')
     
-    # Criar README do site
-    readme_content = f"""# {config['titulo']}
-
-## Descrição
-Site profissional gerado automaticamente com Python.
-
-## Tecnologias
-- HTML5
-- CSS3 (Design Responsivo)
-- JavaScript (Interatividade)
-
-## Como visualizar
-Abra o arquivo `index.html` em qualquer navegador moderno.
-
-## Personalização
-- Edite cores no CSS (variáveis em `:root`)
-- Modifique textos diretamente no HTML
-- Adicione imagens na pasta do projeto
-
-## Gerado com 🐍 Site Generator
-Criado em {datetime.now().strftime('%d/%m/%Y')}
-"""
-    
-    with open(os.path.join(nome, 'README.md'), 'w', encoding='utf-8') as f:
-        f.write(readme_content)
-    
-    print(f"✅ Site criado com sucesso em '{nome}/'")
-    print(f"📁 Abra o arquivo '{nome}/index.html' no navegador")
-    return True
-
-def main():
-    config = perguntar_config()
-    
-    print(f"\n🎨 Gerando site com tema: {config['tema']}...")
-    
-    if criar_site(config):
-        print("\n✨ Site profissional criado com sucesso!")
-        print("\n💡 Dicas:")
-        print("   - Personalize as cores no arquivo index.html")
-        print("   - Adicione suas imagens e conteúdos")
-        print("   - Publique no GitHub Pages ou qualquer hospedagem")
-        
-        # Perguntar se quer abrir
-        resposta = input("\n🌐 Abrir o site no navegador? (s/N): ").strip().lower()
-        if resposta in ('s', 'sim'):
-            import webbrowser
-            webbrowser.open(f"file://{os.path.abspath(config['nome'])}/index.html")
-
-if __name__ == "__main__":
-    try:
-        main()
-    except KeyboardInterrupt:
-        print("\n\n❌ Gerador interrompido.")
-    except Exception as e:
-        print(f"\n❌ Erro: {e}")
+    with open(caminho_html, 'w', encoding='utf-8') as f:
+     
