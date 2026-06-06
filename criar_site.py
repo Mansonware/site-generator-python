@@ -1,159 +1,581 @@
 #!/usr/bin/env python3
 """
-Gerador de site estático com HTML, CSS e JS.
-Cria uma estrutura completa com um clique.
+Gerador de Sites Profissional com Python
+Cria sites modernos, responsivos e prontos para produção
 """
 
 import os
 import sys
+import json
+from datetime import datetime
 
-def criar_site(nome_projeto):
-    """Cria a estrutura de pastas e arquivos do site."""
-    # Pasta do projeto
-    if not os.path.exists(nome_projeto):
-        os.makedirs(nome_projeto)
-    else:
-        print(f"A pasta '{nome_projeto}' já existe. Abortando.")
-        return False
+def perguntar_config():
+    """Coleta configurações do site interativamente."""
+    print("\n" + "="*50)
+    print("🚀 GERADOR DE SITES PROFISSIONAL")
+    print("="*50)
+    
+    config = {}
+    config['nome'] = input("\n📁 Nome do projeto: ").strip()
+    if not config['nome']:
+        config['nome'] = "meu-site"
+    
+    config['titulo'] = input("🏷️  Título do site: ").strip()
+    if not config['titulo']:
+        config['titulo'] = "Meu Site Profissional"
+    
+    config['subtitulo'] = input("📝 Subtítulo (opcional): ").strip()
+    
+    print("\n🎨 Escolha um tema:")
+    print("1. 🌙 Escuro (Dark) - Moderno")
+    print("2. ☀️ Claro (Light) - Clean")
+    print("3. 💜 Roxo (Purple) - Criativo")
+    print("4. 💚 Verde (Green) - Natureza")
+    tema_opcao = input("Digite o número (1-4): ").strip()
+    
+    temas = {
+        "1": "dark",
+        "2": "light", 
+        "3": "purple",
+        "4": "green"
+    }
+    config['tema'] = temas.get(tema_opcao, "dark")
+    
+    print("\n📱 Quais seções incluir?")
+    print("1. 📖 Sobre")
+    print("2. 🛠️ Serviços/Produtos")
+    print("3. 📞 Contato")
+    print("4. 📧 Newsletter")
+    print("5. 💬 Depoimentos")
+    print("6. 🎯 Todas")
+    secoes = input("Digite os números separados por vírgula (ex: 1,2,3): ").strip()
+    config['secoes'] = [s.strip() for s in secoes.split(",")] if secoes else ["1", "2", "3"]
+    
+    config['ano'] = datetime.now().year
+    
+    return config
 
-    # Conteúdo do index.html
-    html_content = '''<!DOCTYPE html>
+def gerar_html(config):
+    """Gera o HTML completo com todas as seções."""
+    
+    # CSS base dependendo do tema
+    temas_css = {
+        "dark": """
+            :root {
+                --bg-primary: #0f0f1f;
+                --bg-secondary: #1a1a2e;
+                --text-primary: #ffffff;
+                --text-secondary: #b8b8d0;
+                --accent: #7c3aed;
+                --accent-hover: #8b5cf6;
+                --card-bg: #16213e;
+            }""",
+        "light": """
+            :root {
+                --bg-primary: #f8fafc;
+                --bg-secondary: #ffffff;
+                --text-primary: #0f172a;
+                --text-secondary: #475569;
+                --accent: #3b82f6;
+                --accent-hover: #2563eb;
+                --card-bg: #ffffff;
+            }""",
+        "purple": """
+            :root {
+                --bg-primary: #1e1b4b;
+                --bg-secondary: #2e2b5e;
+                --text-primary: #f8fafc;
+                --text-secondary: #c4b5fd;
+                --accent: #a78bfa;
+                --accent-hover: #c4b5fd;
+                --card-bg: #312e81;
+            }""",
+        "green": """
+            :root {
+                --bg-primary: #064e3b;
+                --bg-secondary: #047857;
+                --text-primary: #f0fdf4;
+                --text-secondary: #bbf7d0;
+                --accent: #22c55e;
+                --accent-hover: #4ade80;
+                --card-bg: #065f46;
+            }"""
+    }
+    
+    # Seções dinâmicas
+    secoes_html = ""
+    
+    if "1" in config['secoes'] or "6" in config['secoes']:
+        secoes_html += """
+        <section class="section">
+            <div class="container">
+                <h2>Sobre Nós</h2>
+                <p>Somos uma equipe apaixonada por criar soluções digitais incríveis. Nosso objetivo é transformar ideias em realidade através da tecnologia e criatividade.</p>
+                <p>Trabalhamos com as melhores práticas e tecnologias modernas para entregar produtos de alta qualidade.</p>
+            </div>
+        </section>"""
+    
+    if "2" in config['secoes'] or "6" in config['secoes']:
+        secoes_html += """
+        <section class="section">
+            <div class="container">
+                <h2>Nossos Serviços</h2>
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-icon">🚀</div>
+                        <h3>Desenvolvimento Web</h3>
+                        <p>Sites modernos, responsivos e otimizados para SEO.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">📱</div>
+                        <h3>Apps Mobile</h3>
+                        <p>Aplicativos nativos e híbridos para iOS e Android.</p>
+                    </div>
+                    <div class="card">
+                        <div class="card-icon">🎨</div>
+                        <h3>UI/UX Design</h3>
+                        <p>Designs intuitivos e experiências memoráveis.</p>
+                    </div>
+                </div>
+            </div>
+        </section>"""
+    
+    if "3" in config['secoes'] or "6" in config['secoes']:
+        secoes_html += """
+        <section class="section">
+            <div class="container">
+                <h2>Contato</h2>
+                <form id="contactForm" class="contact-form">
+                    <input type="text" placeholder="Seu nome" required>
+                    <input type="email" placeholder="Seu e-mail" required>
+                    <textarea rows="4" placeholder="Sua mensagem" required></textarea>
+                    <button type="submit">Enviar Mensagem</button>
+                </form>
+            </div>
+        </section>"""
+    
+    if "4" in config['secoes'] or "6" in config['secoes']:
+        secoes_html += """
+        <section class="section" style="background: var(--bg-secondary);">
+            <div class="container">
+                <h2>Newsletter</h2>
+                <p>Receba novidades e conteúdos exclusivos</p>
+                <form id="newsletterForm" style="display: flex; gap: 1rem; max-width: 500px; margin: 0 auto;">
+                    <input type="email" placeholder="Seu melhor e-mail" required style="flex: 1;">
+                    <button type="submit">Inscrever</button>
+                </form>
+            </div>
+        </section>"""
+    
+    if "5" in config['secoes'] or "6" in config['secoes']:
+        secoes_html += """
+        <section class="section">
+            <div class="container">
+                <h2>Depoimentos</h2>
+                <div class="cards">
+                    <div class="card">
+                        <p>"Excelente trabalho! Superou todas as expectativas."</p>
+                        <h3>- João Silva</h3>
+                        <span>CEO Empresa X</span>
+                    </div>
+                    <div class="card">
+                        <p>"Time muito profissional e atencioso. Recomendo!"</p>
+                        <h3>- Maria Santos</h3>
+                        <span>CTO Startup Y</span>
+                    </div>
+                </div>
+            </div>
+        </section>"""
+    
+    html = f'''<!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Meu Site</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="description" content="{config['titulo']} - Site profissional gerado com Python">
+    <meta name="author" content="Site Generator">
+    <title>{config['titulo']}</title>
+    <style>
+        {temas_css[config['tema']]}
+        
+        * {{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }}
+        
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }}
+        
+        /* Header e Navegação */
+        .header {{
+            background: var(--bg-secondary);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }}
+        
+        .nav {{
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }}
+        
+        .logo {{
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+        }}
+        
+        .nav-links {{
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }}
+        
+        .nav-links a {{
+            color: var(--text-primary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }}
+        
+        .nav-links a:hover {{
+            color: var(--accent);
+        }}
+        
+        /* Hero Section */
+        .hero {{
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 6rem 2rem 4rem;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        }}
+        
+        .hero h1 {{
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            animation: fadeInUp 1s ease;
+        }}
+        
+        .hero p {{
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease 0.2s both;
+        }}
+        
+        .btn {{
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 30px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s, background 0.3s;
+            animation: fadeInUp 1s ease 0.4s both;
+        }}
+        
+        .btn:hover {{
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }}
+        
+        /* Sections */
+        .section {{
+            padding: 5rem 2rem;
+        }}
+        
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+        }}
+        
+        h2 {{
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: var(--accent);
+        }}
+        
+        /* Cards */
+        .cards {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }}
+        
+        .card {{
+            background: var(--card-bg);
+            padding: 2rem;
+            border-radius: 15px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }}
+        
+        .card:hover {{
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }}
+        
+        .card-icon {{
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }}
+        
+        /* Formulários */
+        .contact-form {{
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }}
+        
+        input, textarea {{
+            padding: 12px;
+            border: 1px solid var(--text-secondary);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 8px;
+            font-size: 1rem;
+        }}
+        
+        button {{
+            background: var(--accent);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background 0.3s;
+        }}
+        
+        button:hover {{
+            background: var(--accent-hover);
+        }}
+        
+        /* Footer */
+        .footer {{
+            background: var(--bg-secondary);
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }}
+        
+        /* Animações */
+        @keyframes fadeInUp {{
+            from {{
+                opacity: 0;
+                transform: translateY(30px);
+            }}
+            to {{
+                opacity: 1;
+                transform: translateY(0);
+            }}
+        }}
+        
+        /* Responsivo */
+        @media (max-width: 768px) {{
+            .hero h1 {{
+                font-size: 2rem;
+            }}
+            
+            .nav {{
+                flex-direction: column;
+                text-align: center;
+            }}
+            
+            .nav-links {{
+                justify-content: center;
+            }}
+            
+            h2 {{
+                font-size: 1.8rem;
+            }}
+            
+            .section {{
+                padding: 3rem 1rem;
+            }}
+        }}
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Bem-vindo ao seu novo site</h1>
-        <p>Este site foi gerado automaticamente com Python.</p>
-        <button id="btnClique">Clique aqui</button>
-        <p id="mensagem"></p>
-    </div>
-    <script src="script.js"></script>
+    <header class="header">
+        <nav class="nav">
+            <div class="logo">{config['titulo'][:20]}</div>
+            <div class="nav-links">
+                <a href="#home">Início</a>
+                <a href="#sobre">Sobre</a>
+                <a href="#servicos">Serviços</a>
+                <a href="#contato">Contato</a>
+            </div>
+        </nav>
+    </header>
+    
+    <section id="home" class="hero">
+        <div class="container">
+            <h1>{config['titulo']}</h1>
+            {f'<p>{config["subtitulo"]}</p>' if config['subtitulo'] else '<p>Bem-vindo ao nosso site profissional</p>'}
+            <a href="#contato" class="btn">Vamos Conversar</a>
+        </div>
+    </section>
+    
+    {secoes_html}
+    
+    <footer class="footer">
+        <p>&copy; {config['ano']} {config['titulo']}. Todos os direitos reservados.</p>
+        <p>Criado com 🐍 Python Site Generator</p>
+    </footer>
+    
+    <script>
+        // Smooth scroll para os links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {{
+            anchor.addEventListener('click', function (e) {{
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if(target) {{
+                    target.scrollIntoView({{
+                        behavior: 'smooth',
+                        block: 'start'
+                    }});
+                }}
+            }});
+        }});
+        
+        // Formulário de contato
+        const contactForm = document.getElementById('contactForm');
+        if(contactForm) {{
+            contactForm.addEventListener('submit', (e) => {{
+                e.preventDefault();
+                alert('Mensagem enviada! Entraremos em contato em breve.');
+                contactForm.reset();
+            }});
+        }}
+        
+        // Newsletter
+        const newsletterForm = document.getElementById('newsletterForm');
+        if(newsletterForm) {{
+            newsletterForm.addEventListener('submit', (e) => {{
+                e.preventDefault();
+                alert('Inscrição realizada com sucesso!');
+                newsletterForm.reset();
+            }});
+        }}
+        
+        // Animação ao scroll
+        const observerOptions = {{
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        }};
+        
+        const observer = new IntersectionObserver((entries) => {{
+            entries.forEach(entry => {{
+                if(entry.isIntersecting) {{
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }}
+            }});
+        }}, observerOptions);
+        
+        document.querySelectorAll('.section, .card').forEach(el => {{
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'all 0.6s ease-out';
+            observer.observe(el);
+        }});
+    </script>
 </body>
 </html>'''
+    
+    return html
 
-    # Conteúdo do style.css
-    css_content = '''* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+def criar_site(config):
+    """Cria a estrutura completa do site."""
+    nome = config['nome']
+    
+    if os.path.exists(nome):
+        print(f"❌ Pasta '{nome}' já existe.")
+        return False
+    
+    os.makedirs(nome)
+    
+    # Gerar HTML
+    html_content = gerar_html(config)
+    with open(os.path.join(nome, 'index.html'), 'w', encoding='utf-8') as f:
+        f.write(html_content)
+    
+    # Criar README do site
+    readme_content = f"""# {config['titulo']}
 
-body {
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-}
+## Descrição
+Site profissional gerado automaticamente com Python.
 
-.container {
-    background: white;
-    border-radius: 20px;
-    padding: 2rem;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-    max-width: 500px;
-    width: 100%;
-    text-align: center;
-}
-
-h1 {
-    color: #333;
-    margin-bottom: 1rem;
-}
-
-p {
-    color: #666;
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
-}
-
-button {
-    background: #764ba2;
-    color: white;
-    border: none;
-    padding: 12px 24px;
-    font-size: 1rem;
-    border-radius: 30px;
-    cursor: pointer;
-    transition: transform 0.2s, background 0.2s;
-}
-
-button:hover {
-    background: #5a3780;
-    transform: scale(1.02);
-}
-
-button:active {
-    transform: scale(0.98);
-}
-
-#mensagem {
-    margin-top: 1rem;
-    font-weight: bold;
-    color: #764ba2;
-}'''
-
-    # Conteúdo do script.js
-    js_content = '''document.getElementById('btnClique').addEventListener('click', function() {
-    const mensagem = document.getElementById('mensagem');
-    mensagem.textContent = 'Botão clicado! JavaScript funcionando perfeitamente. 🎉';
-    mensagem.style.opacity = '0';
-    setTimeout(() => { mensagem.style.opacity = '1'; }, 10);
-});'''
-
-    # Conteúdo do README do site (opcional)
-    site_readme = f'''# {nome_projeto}
-
-Site gerado automaticamente pelo **site-generator-python**.
+## Tecnologias
+- HTML5
+- CSS3 (Design Responsivo)
+- JavaScript (Interatividade)
 
 ## Como visualizar
+Abra o arquivo `index.html` em qualquer navegador moderno.
 
-Abra o arquivo `index.html` no seu navegador.
+## Personalização
+- Edite cores no CSS (variáveis em `:root`)
+- Modifique textos diretamente no HTML
+- Adicione imagens na pasta do projeto
 
-## Estrutura
-
-- `index.html` - estrutura HTML
-- `style.css` - estilos CSS responsivos
-- `script.js` - interatividade em JavaScript
-'''
-
-    # Escrever arquivos
-    with open(os.path.join(nome_projeto, 'index.html'), 'w', encoding='utf-8') as f:
-        f.write(html_content)
-    with open(os.path.join(nome_projeto, 'style.css'), 'w', encoding='utf-8') as f:
-        f.write(css_content)
-    with open(os.path.join(nome_projeto, 'script.js'), 'w', encoding='utf-8') as f:
-        f.write(js_content)
-    with open(os.path.join(nome_projeto, 'README.md'), 'w', encoding='utf-8') as f:
-        f.write(site_readme)
-
-    print(f"✅ Site criado com sucesso na pasta '{nome_projeto}'")
+## Gerado com 🐍 Site Generator
+Criado em {datetime.now().strftime('%d/%m/%Y')}
+"""
+    
+    with open(os.path.join(nome, 'README.md'), 'w', encoding='utf-8') as f:
+        f.write(readme_content)
+    
+    print(f"✅ Site criado com sucesso em '{nome}/'")
+    print(f"📁 Abra o arquivo '{nome}/index.html' no navegador")
     return True
 
 def main():
-    print("===== GERADOR DE SITE EM PYTHON =====")
-    if len(sys.argv) > 1:
-        nome = sys.argv[1]
-    else:
-        nome = input("Digite o nome do seu projeto/site: ").strip()
-        if not nome:
-            print("Nome inválido.")
-            return
-
-    if criar_site(nome):
-        # Perguntar se quer abrir no navegador
-        resposta = input("Abrir o site no navegador agora? (s/N): ").strip().lower()
+    config = perguntar_config()
+    
+    print(f"\n🎨 Gerando site com tema: {config['tema']}...")
+    
+    if criar_site(config):
+        print("\n✨ Site profissional criado com sucesso!")
+        print("\n💡 Dicas:")
+        print("   - Personalize as cores no arquivo index.html")
+        print("   - Adicione suas imagens e conteúdos")
+        print("   - Publique no GitHub Pages ou qualquer hospedagem")
+        
+        # Perguntar se quer abrir
+        resposta = input("\n🌐 Abrir o site no navegador? (s/N): ").strip().lower()
         if resposta in ('s', 'sim'):
             import webbrowser
-            webbrowser.open(f"file://{os.path.abspath(nome)}/index.html")
-        print("\n✨ Para personalizar, edite os arquivos dentro da pasta.")
+            webbrowser.open(f"file://{os.path.abspath(config['nome'])}/index.html")
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\n❌ Gerador interrompido.")
+    except Exception as e:
+        print(f"\n❌ Erro: {e}")
