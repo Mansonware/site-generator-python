@@ -6,7 +6,6 @@ Com suporte total para Termux (Android) e todos os sistemas
 
 import os
 import sys
-import json
 import subprocess
 import platform
 from datetime import datetime
@@ -33,11 +32,9 @@ def abrir_navegador(caminho_html):
     
     print(f"\n🌐 Tentando abrir: {caminho_absoluto}")
     
-    # Estratégia 1: Termux (Android)
     if ambiente["is_termux"]:
         print("📱 Detectado Termux (Android)")
         
-        # Tenta abrir com xdg-open (se disponível no Termux)
         try:
             subprocess.run(["xdg-open", caminho_absoluto], timeout=3)
             print("✅ Site aberto no navegador Android!")
@@ -45,7 +42,6 @@ def abrir_navegador(caminho_html):
         except:
             pass
         
-        # Alternativa: mostrar comando manual
         print("\n⚠️ Não foi possível abrir automaticamente.")
         print("📌 Para visualizar o site:")
         print(f"   1. Acesse pelo gerenciador de arquivos: {caminho_absoluto}")
@@ -54,7 +50,6 @@ def abrir_navegador(caminho_html):
         print("      python -m http.server 8000")
         print("      Então abra no navegador: http://localhost:8000")
         
-        # Pergunta se quer iniciar servidor HTTP
         resposta = input("\n🔧 Iniciar servidor HTTP local para visualizar? (s/N): ").strip().lower()
         if resposta in ('s', 'sim'):
             print("\n🚀 Iniciando servidor...")
@@ -68,7 +63,6 @@ def abrir_navegador(caminho_html):
             return True
         return False
     
-    # Estratégia 2: Linux / macOS / Windows
     if ambiente["is_linux"]:
         try:
             subprocess.run(["xdg-open", caminho_absoluto])
@@ -93,7 +87,6 @@ def abrir_navegador(caminho_html):
         except:
             pass
     
-    # Estratégia 3: Fallback - mostrar caminho
     print(f"\n📁 Abra manualmente o arquivo: {caminho_absoluto}")
     return False
 
@@ -141,7 +134,6 @@ def perguntar_config():
     
     config['ano'] = datetime.now().year
     
-    # Mostrar resumo
     print("\n" + "="*50)
     print("📋 RESUMO DO SITE:")
     print(f"   Nome: {config['nome']}")
@@ -160,7 +152,6 @@ def perguntar_config():
 def gerar_html(config):
     """Gera o HTML completo com todas as seções."""
     
-    # CSS base dependendo do tema
     temas_css = {
         "dark": """
             :root {
@@ -204,7 +195,6 @@ def gerar_html(config):
             }"""
     }
     
-    # Seções dinâmicas
     secoes_html = ""
     
     if "1" in config['secoes'] or "6" in config['secoes']:
@@ -294,8 +284,6 @@ def gerar_html(config):
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <meta name="description" content="{config['titulo']} - Site profissional gerado com Python">
-    <meta name="author" content="Site Generator">
     <title>{config['titulo']}</title>
     <style>
         {temas_css[config['tema']]}
@@ -314,7 +302,6 @@ def gerar_html(config):
             scroll-behavior: smooth;
         }}
         
-        /* Header e Navegação */
         .header {{
             background: var(--bg-secondary);
             padding: 1rem 0;
@@ -358,7 +345,6 @@ def gerar_html(config):
             color: var(--accent);
         }}
         
-        /* Hero Section */
         .hero {{
             min-height: 100vh;
             display: flex;
@@ -389,8 +375,6 @@ def gerar_html(config):
             padding: 12px 30px;
             border-radius: 30px;
             text-decoration: none;
-            border: none;
-            cursor: pointer;
             transition: transform 0.3s, background 0.3s;
             animation: fadeInUp 1s ease 0.4s both;
         }}
@@ -400,7 +384,6 @@ def gerar_html(config):
             transform: translateY(-2px);
         }}
         
-        /* Sections */
         .section {{
             padding: 5rem 2rem;
         }}
@@ -417,7 +400,6 @@ def gerar_html(config):
             color: var(--accent);
         }}
         
-        /* Cards */
         .cards {{
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -443,7 +425,6 @@ def gerar_html(config):
             margin-bottom: 1rem;
         }}
         
-        /* Formulários */
         .contact-form {{
             display: flex;
             flex-direction: column;
@@ -476,7 +457,6 @@ def gerar_html(config):
             background: var(--accent-hover);
         }}
         
-        /* Footer */
         .footer {{
             background: var(--bg-secondary);
             text-align: center;
@@ -484,7 +464,6 @@ def gerar_html(config):
             margin-top: 2rem;
         }}
         
-        /* Animações */
         @keyframes fadeInUp {{
             from {{
                 opacity: 0;
@@ -496,7 +475,6 @@ def gerar_html(config):
             }}
         }}
         
-        /* Responsivo */
         @media (max-width: 768px) {{
             .hero h1 {{
                 font-size: 2rem;
@@ -550,7 +528,6 @@ def gerar_html(config):
     </footer>
     
     <script>
-        // Smooth scroll para os links
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {{
             anchor.addEventListener('click', function (e) {{
                 e.preventDefault();
@@ -564,7 +541,6 @@ def gerar_html(config):
             }});
         }});
         
-        // Formulário de contato
         const contactForm = document.getElementById('contactForm');
         if(contactForm) {{
             contactForm.addEventListener('submit', (e) => {{
@@ -574,7 +550,6 @@ def gerar_html(config):
             }});
         }}
         
-        // Newsletter
         const newsletterForm = document.getElementById('newsletterForm');
         if(newsletterForm) {{
             newsletterForm.addEventListener('submit', (e) => {{
@@ -584,7 +559,6 @@ def gerar_html(config):
             }});
         }}
         
-        // Animação ao scroll
         const observerOptions = {{
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
@@ -621,9 +595,44 @@ def criar_site(config):
     
     os.makedirs(nome)
     
-    # Gerar HTML
     html_content = gerar_html(config)
     caminho_html = os.path.join(nome, 'index.html')
     
     with open(caminho_html, 'w', encoding='utf-8') as f:
-     
+        f.write(html_content)
+    
+    readme_content = f"""# {config['titulo']}
+
+Site gerado automaticamente com Python Site Generator.
+
+## Como visualizar
+Abra o arquivo `index.html` no seu navegador.
+
+## Personalização
+Edite os arquivos HTML, CSS e JavaScript conforme sua necessidade.
+
+---
+Criado em {datetime.now().strftime('%d/%m/%Y')}
+"""
+    
+    with open(os.path.join(nome, 'README.md'), 'w', encoding='utf-8') as f:
+        f.write(readme_content)
+    
+    print(f"\n✅ Site criado com sucesso em: '{nome}/'")
+    return caminho_html
+
+def main():
+    ambiente = detectar_ambiente()
+    
+    if ambiente["is_termux"]:
+        print("\n📱 === MODO TERMUX (ANDROID) DETECTADO ===")
+        print("🎯 Visualização otimizada para celular!")
+    
+    config = perguntar_config()
+    
+    print(f"\n🎨 Gerando site com tema: {config['tema']}...")
+    
+    caminho_html = criar_site(config)
+    
+    if caminho_html:
+  
